@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRADEWIND RALLY — Archipelago Flight Game</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='7' fill='%23f6b84c'/></svg>" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="game-shell">
+    <canvas id="flight-canvas" width="1280" height="720"></canvas>
+
+    <!-- Title Screen Overlay -->
+    <section id="screen-title" class="overlay-screen">
+      <div class="title-layout">
+        <header class="title-banner">
+          <div class="eyebrow">ARCHIPELAGO AIR RALLY • TW-7 ALBATROSS</div>
+          <h1 class="game-title">TRADEWIND RALLY</h1>
+          <p class="subtitle">Master throttle, energy, and island crosswinds across three coastal sorties.</p>
+        </header>
+
+        <div class="mission-grid" id="title-mission-list">
+          <button class="mission-card selected" data-mission="ring-rally" type="button">
+            <div class="card-top">
+              <span class="mission-code">SORTIE 01</span>
+              <span class="mission-tag tag-speed">TIME TRIAL</span>
+            </div>
+            <h2>Ring Rally</h2>
+            <p>Thread 10 aerial beacons from Aurelia Atoll across the turquoise strait to Kestrel Key.</p>
+            <div class="card-meta">
+              <span>10 RINGS</span>
+              <span>FUEL 100%</span>
+              <span>WIND 8 KT</span>
+            </div>
+          </button>
+
+          <button class="mission-card" data-mission="island-hop" type="button">
+            <div class="card-top">
+              <span class="mission-code">SORTIE 02</span>
+              <span class="mission-tag tag-precision">PRECISION LANDING</span>
+            </div>
+            <h2>Island Hop</h2>
+            <p>Cross the sunlit ridge, align with Coral Haven PAPI lights, flare smoothly, and nail Runway 09.</p>
+            <div class="card-meta">
+              <span>APPROACH</span>
+              <span>FUEL 80%</span>
+              <span>WIND 12 KT</span>
+            </div>
+          </button>
+
+          <button class="mission-card" data-mission="courier-run" type="button">
+            <div class="card-top">
+              <span class="mission-code">SORTIE 03</span>
+              <span class="mission-tag tag-endurance">FUEL STRATEGY</span>
+            </div>
+            <h2>Courier Run</h2>
+            <p>Deliver island airmail to 3 coastal strips on a tight tank. Cruise lean or run dry.</p>
+            <div class="card-meta">
+              <span>3 AIRFIELDS</span>
+              <span>FUEL 62%</span>
+              <span>WIND 10 KT</span>
+            </div>
+          </button>
+        </div>
+
+        <footer class="title-footer">
+          <div class="controls-strip">
+            <span class="ctrl-item"><kbd>↑↓</kbd> / <kbd>W S</kbd> Pitch</span>
+            <span class="ctrl-item"><kbd>←→</kbd> / <kbd>A D</kbd> Bank</span>
+            <span class="ctrl-item"><kbd>Shift</kbd> / <kbd>Ctrl</kbd> Throttle</span>
+            <span class="ctrl-item"><kbd>Space</kbd> Airbrake</span>
+            <span class="ctrl-item"><kbd>P</kbd> Pause</span>
+            <span class="ctrl-item"><kbd>M</kbd> Audio</span>
+            <span class="ctrl-item"><kbd>Mouse</kbd> Drag Steer</span>
+          </div>
+          <div class="title-actions">
+            <button id="btn-open-briefing" class="btn-primary" type="button">BRIEFING &amp; LAUNCH</button>
+            <button id="btn-quick-fly" class="btn-secondary" type="button">FLY NOW</button>
+          </div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- Mission Briefing Overlay -->
+    <section id="screen-briefing" class="overlay-screen hidden">
+      <div class="panel-card briefing-card">
+        <div class="panel-header">
+          <div>
+            <div class="eyebrow" id="briefing-code">SORTIE BRIEFING</div>
+            <h2 id="briefing-title">Ring Rally</h2>
+          </div>
+          <span class="badge-pill" id="briefing-wind">WIND 085° / 8 KT</span>
+        </div>
+        <div class="briefing-body">
+          <canvas id="briefing-map" width="380" height="280"></canvas>
+          <div class="briefing-info">
+            <p id="briefing-desc" class="briefing-desc"></p>
+            <ul id="briefing-objectives" class="objective-list"></ul>
+            <div class="briefing-tips">
+              <strong>PILOT NOTES:</strong> Manage throttle to preserve fuel; keep airspeed above 55 KT to avoid stall. Hold <kbd>Space</kbd> on approach to bleed airspeed and flare below 350 FPM.
+            </div>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-briefing-back" class="btn-secondary" type="button">BACK</button>
+          <button id="btn-briefing-launch" class="btn-primary" type="button">LAUNCH SORTIE</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pause Overlay -->
+    <section id="screen-pause" class="overlay-screen hidden">
+      <div class="panel-card compact-card">
+        <div class="eyebrow">FLIGHT PAUSED</div>
+        <h2>Cockpit Checklist</h2>
+        <div class="controls-grid">
+          <div><kbd>W</kbd> / <kbd>S</kbd> or <kbd>↑</kbd> / <kbd>↓</kbd></div><div>Pitch Nose Down / Up</div>
+          <div><kbd>A</kbd> / <kbd>D</kbd> or <kbd>←</kbd> / <kbd>→</kbd></div><div>Bank Left / Right</div>
+          <div><kbd>Shift</kbd> / <kbd>Ctrl</kbd> (or <kbd>E</kbd>/<kbd>Q</kbd>)</div><div>Throttle Up / Down</div>
+          <div><kbd>Space</kbd></div><div>Airbrake / Wheel Brakes</div>
+          <div><kbd>Mouse Drag</kbd></div><div>Proportional Yoke Steer</div>
+          <div><kbd>R</kbd> / <kbd>M</kbd> / <kbd>P</kbd></div><div>Restart / Mute / Resume</div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-resume" class="btn-primary" type="button">RESUME FLIGHT</button>
+          <button id="btn-pause-restart" class="btn-secondary" type="button">RESTART (R)</button>
+          <button id="btn-pause-menu" class="btn-secondary" type="button">MAIN MENU</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mission Complete / Landing Success Overlay -->
+    <section id="screen-summary" class="overlay-screen hidden summary-mode">
+      <div class="panel-card summary-card">
+        <div class="panel-header">
+          <div>
+            <div class="eyebrow" id="summary-eyebrow">SORTIE COMPLETE • LOGBOOK RECORDED</div>
+            <h2 id="summary-title">TOUCHDOWN CONFIRMED</h2>
+          </div>
+          <span class="grade-stamp" id="summary-grade">A+</span>
+        </div>
+        <p id="summary-subtitle" class="summary-subtitle"></p>
+        <div class="score-table" id="summary-breakdown"></div>
+        <div class="total-row">
+          <span>TOTAL SORTIE SCORE</span>
+          <strong id="summary-total">0</strong>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-summary-next" class="btn-primary" type="button">NEXT MISSION</button>
+          <button id="btn-summary-retry" class="btn-secondary" type="button">FLY AGAIN (R)</button>
+          <button id="btn-summary-menu" class="btn-secondary" type="button">MENU</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Crash / Mission Failed Overlay -->
+    <section id="screen-crash" class="overlay-screen hidden">
+      <div class="panel-card crash-card">
+        <div class="eyebrow crash-eyebrow">INCIDENT REPORT • SORTIE TERMINATED</div>
+        <h2 id="crash-title">AIRFRAME LOST</h2>
+        <p id="crash-reason" class="crash-reason"></p>
+        <div class="telemetry-strip" id="crash-telemetry"></div>
+        <div class="panel-actions">
+          <button id="btn-crash-retry" class="btn-primary" type="button">RETRY SORTIE (R)</button>
+          <button id="btn-crash-menu" class="btn-secondary" type="button">MISSION SELECT</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
